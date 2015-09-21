@@ -15,8 +15,8 @@ legend_i <- levels(as.factor(df_i$map_code))
 legend_class_i <- areas_i$class[areas_i$code %in% as.numeric(legend_i)]
 
 legend_agg <- c(1,2,3)
-names(legend_agg)<-c("Forest","Non_Forest","Other")
-
+names(legend_agg)<-c("Forêt","Non Forêt","Pertes")
+areas_i[,3]<-areas_i[,3]*900/10000
 
 shinyServer(
   function(input, output) {
@@ -26,9 +26,10 @@ shinyServer(
       names(the_list)<-legend_class_i
       
       selectInput("class_for", 
-                  label = h3(paste("Classes to include in Forest")), 
+                  label = h3(paste("Classes à agréger sous Forêt")), 
                   choices = the_list,
-                  multiple = TRUE
+                  multiple = TRUE,
+                  selected = c("Fp","Fs","Fm")
       )
     })
     
@@ -37,9 +38,10 @@ shinyServer(
       names(the_list)<-legend_class_i
       
       selectInput("class_nofor", 
-                  label = h3(paste("Classes to include in No Forest")), 
+                  label = h3(paste("Classes à agréger sous Non-Forêt")), 
                   choices = the_list,
-                  multiple = TRUE
+                  multiple = TRUE,
+                  selected = c("Eau","NF")
       )
     })
     
@@ -48,9 +50,10 @@ shinyServer(
       names(the_list)<-legend_class_i
       
       selectInput("class_other", 
-                  label = h3(paste("Classes to include in Other")), 
+                  label = h3(paste("Classes à agréger sous Pertes")), 
                   choices = the_list,
-                  multiple = TRUE
+                  multiple = TRUE,
+                  selected = c("Pp","Ps","Pm","Pr")
       )
     })
     
@@ -162,7 +165,7 @@ accuracy_all <- reactive({
         }
         
         ### Calculer la Precision Generale
-        confusion[length(legend)+1,]<-c("overall","",sum(diag(matrix))/sum(matrix[]),sum(diag(matrix_w))/sum(matrix_w[]),"",sum(areas$area),sum(areas$area),"","")
+        confusion[length(legend)+1,]<-c("Total","",sum(diag(matrix))/sum(matrix[]),sum(diag(matrix_w))/sum(matrix_w[]),"",sum(areas$area),sum(areas$area),"","")
         confusion
   })  
 # ################################################    
@@ -174,8 +177,8 @@ accuracy_all <- reactive({
                     item<-item[,c("class","PaW","Ua","area_adj")]
                     item$PaW<-floor(as.numeric(item$PaW)*100)
                     item$Ua<-floor(as.numeric(item$Ua)*100)
-                    item$area_adj<-floor(as.numeric(item$area_adj)*900/10000)
-                    names(item) <-c("class","Producer's accuracy","User's accuracy","Area adjusted ('000 ha)")
+                    item$area_adj<-floor(as.numeric(item$area_adj))
+                    names(item) <-c("Classe","Préc. Prod.","Préc. Util.","Superficie corr. ('000 ha)")
                     item
                     })
 #   
@@ -278,7 +281,7 @@ accuracy_agg <- reactive({
   }
   
   ### Calculer la Precision Generale
-  confusion[length(legend)+1,]<-c("overall","",sum(diag(matrix))/sum(matrix[]),sum(diag(matrix_w))/sum(matrix_w[]),"",sum(areas$area),sum(areas$area),"","")
+  confusion[length(legend)+1,]<-c("Total","",sum(diag(matrix))/sum(matrix[]),sum(diag(matrix_w))/sum(matrix_w[]),"",sum(areas$area),sum(areas$area),"","")
   confusion
 })  
 # ################################################    
@@ -290,8 +293,8 @@ output$accuracy_agg <- renderTable({
   item<-item[,c("class","PaW","Ua","area_adj")]
   item$PaW<-floor(as.numeric(item$PaW)*100)
   item$Ua<-floor(as.numeric(item$Ua)*100)
-  item$area_adj<-floor(as.numeric(item$area_adj)*900/10000)
-  names(item) <-c("class","Producer's accuracy","User's accuracy","Area adjusted ('000 ha)")
+  item$area_adj<-floor(as.numeric(item$area_adj))
+  names(item) <-c("Classe","Préc. Prod.","Préc. Util.","Superficie corr. ('000 ha)")
   item
 })
 #   
